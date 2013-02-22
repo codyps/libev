@@ -467,6 +467,7 @@ union ev_any_watcher
 {
   struct ev_watcher w;
   struct ev_watcher_list wl;
+  struct ev_watcher_time wtime;
 
   struct ev_io io;
   struct ev_timer timer;
@@ -682,14 +683,14 @@ EV_API_DECL void ev_resume  (EV_P) EV_THROW;
 /* these may evaluate ev multiple times, and the other arguments at most once */
 /* either use ev_init + ev_TYPE_set, or the ev_TYPE_init macro, below, to first initialise a watcher */
 #define ev_init(ev,cb_) do {			\
-  ((ev_watcher *)(void *)(ev))->active  =	\
-  ((ev_watcher *)(void *)(ev))->pending = 0;	\
+  ((union ev_any_watcher *)(ev))->w.active  =	\
+  ((union ev_any_watcher *)(ev))->w.pending = 0;	\
   ev_set_priority ((ev), 0);			\
   ev_set_cb ((ev), cb_);			\
 } while (0)
 
 #define ev_io_set(ev,fd_,events_)            do { (ev)->fd = (fd_); (ev)->events = (events_) | EV__IOFDSET; } while (0)
-#define ev_timer_set(ev,after_,repeat_)      do { ((ev_watcher_time *)(ev))->at = (after_); (ev)->repeat = (repeat_); } while (0)
+#define ev_timer_set(ev,after_,repeat_)      do { ((union ev_any_watcher *)(ev))->wtime.at = (after_); (ev)->repeat = (repeat_); } while (0)
 #define ev_periodic_set(ev,ofs_,ival_,rcb_)  do { (ev)->offset = (ofs_); (ev)->interval = (ival_); (ev)->reschedule_cb = (rcb_); } while (0)
 #define ev_signal_set(ev,signum_)            do { (ev)->signum = (signum_); } while (0)
 #define ev_child_set(ev,pid_,trace_)         do { (ev)->pid = (pid_); (ev)->flags = !!(trace_); } while (0)
@@ -716,8 +717,8 @@ EV_API_DECL void ev_resume  (EV_P) EV_THROW;
 #define ev_cleanup_init(ev,cb)               do { ev_init ((ev), (cb)); ev_cleanup_set ((ev)); } while (0)
 #define ev_async_init(ev,cb)                 do { ev_init ((ev), (cb)); ev_async_set ((ev)); } while (0)
 
-#define ev_is_pending(ev)                    (0 + ((ev_watcher *)(void *)(ev))->pending) /* ro, true when watcher is waiting for callback invocation */
-#define ev_is_active(ev)                     (0 + ((ev_watcher *)(void *)(ev))->active) /* ro, true when the watcher has been started */
+#define ev_is_pending(ev)                    (0 + ((union ev_any_watcher *)(ev))->w.pending) /* ro, true when watcher is waiting for callback invocation */
+#define ev_is_active(ev)                     (0 + ((union ev_any_watcher *)(ev))->w.active) /* ro, true when the watcher has been started */
 
 #define ev_cb(ev)                            (ev)->cb /* rw */
 
@@ -725,11 +726,11 @@ EV_API_DECL void ev_resume  (EV_P) EV_THROW;
 # define ev_priority(ev)                     ((ev), EV_MINPRI)
 # define ev_set_priority(ev,pri)             ((ev), (pri))
 #else
-# define ev_priority(ev)                     (+(((ev_watcher *)(void *)(ev))->priority))
-# define ev_set_priority(ev,pri)             (   (ev_watcher *)(void *)(ev))->priority = (pri)
+# define ev_priority(ev)                     (+(((union ev_any_watcher *)(ev))->w.priority))
+# define ev_set_priority(ev,pri)             (   (union ev_any_watcher *)(ev))->w.priority = (pri)
 #endif
 
-#define ev_periodic_at(ev)                   (+((ev_watcher_time *)(ev))->at)
+#define ev_periodic_at(ev)                   (+((union ev_any_watcher *)(ev))->wtime.at)
 
 #ifndef ev_set_cb
 # define ev_set_cb(ev,cb_)                   ev_cb (ev) = (cb_)
